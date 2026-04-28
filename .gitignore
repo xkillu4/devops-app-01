@@ -1,3 +1,16 @@
 .env
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+.env.local
+
+# Docker
+*.log
+
+# VS Code
+.vscode/
