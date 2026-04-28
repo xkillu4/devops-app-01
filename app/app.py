@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import psycopg2
 import os
+import time
 
 app = Flask(__name__)
 
@@ -13,19 +14,33 @@ def get_db_connection():
     )
 
 def init_db():
-    conn = get_db_connection()
-    cur = conn.cursor()
+    retries = 10
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name TEXT
-        );
-    """)
+    while retries > 0:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
 
-    conn.commit()
-    cur.close()
-    conn.close()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT
+                );
+            """)
+
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            print("Database initialized successfully")
+            return
+
+        except Exception as e:
+            retries -= 1
+            print(f"Database not ready yet. Retries left: {retries}. Error: {e}")
+            time.sleep(3)
+
+    raise Exception("Could not connect to the database after several retries")
 
 @app.route("/", methods=["GET"])
 def home():
