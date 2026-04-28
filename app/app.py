@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import psycopg2
 import os
 
@@ -27,26 +27,54 @@ def init_db():
     cur.close()
     conn.close()
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return "App DevOps funcionando"
 
-@app.route("/health")
+@app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
 
-@app.route("/users")
-def users():
-    conn = get_db_connection()
-    cur = conn.cursor()
+@app.route("/users", methods=["GET"])
+def get_users():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-    cur.execute("SELECT id, name FROM users;")
-    rows = cur.fetchall()
+        cur.execute("SELECT id, name FROM users;")
+        rows = cur.fetchall()
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-    return jsonify([{"id": row[0], "name": row[1]} for row in rows])
+        return jsonify([{"id": row[0], "name": row[1]} for row in rows])
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/users", methods=["POST"])
+def add_user():
+    try:
+        data = request.get_json()
+
+        if not data or "name" not in data:
+            return jsonify({"error": "Name is required"}), 400
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("INSERT INTO users (name) VALUES (%s);", (data["name"],))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        return jsonify({"message": "User created", "name": data["name"]}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     init_db()
