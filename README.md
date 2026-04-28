@@ -61,8 +61,6 @@ POSTGRES_USER=user
 POSTGRES_PASSWORD=password
 ```
 
-El archivo `.env` no debe subirse al repositorio.
-
 ## Cómo ejecutar
 
 Construir y levantar los contenedores:
