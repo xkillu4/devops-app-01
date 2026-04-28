@@ -12,6 +12,21 @@ def get_db_connection():
         password=os.getenv("POSTGRES_PASSWORD")
     )
 
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name TEXT
+        );
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
 @app.route("/")
 def home():
     return "App DevOps funcionando"
@@ -25,16 +40,6 @@ def users():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name TEXT
-        );
-    """)
-
-    cur.execute("INSERT INTO users (name) VALUES (%s);", ("Killua",))
-    conn.commit()
-
     cur.execute("SELECT id, name FROM users;")
     rows = cur.fetchall()
 
@@ -44,4 +49,5 @@ def users():
     return jsonify([{"id": row[0], "name": row[1]} for row in rows])
 
 if __name__ == "__main__":
+    init_db()
     app.run(host="0.0.0.0", port=5000)
