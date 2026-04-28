@@ -6,11 +6,8 @@ services:
     container_name: devops_app_web
     ports:
       - "5000:5000"
-    environment:
-      POSTGRES_HOST: db
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
     depends_on:
       - db
     restart: unless-stopped
@@ -18,10 +15,8 @@ services:
   db:
     image: postgres:13
     container_name: devops_app_db
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+    env_file:
+      - .env
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: unless-stopped
